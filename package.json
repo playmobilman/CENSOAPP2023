@@ -1,0 +1,16 @@
+{
+  "name": "censoapp2023",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build:css": "postcss www/appstyles.css -o www/appstyles-output.css",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "postcss-cli": "^10.1.0"
+  }
+}
