@@ -1,12 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CENSO APP - 2023</title>
-    <script type="module" src="js/appMain.js" defer></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.esm.js"></script>
+    <script nomodule src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.js"></script>
+    <script src="js/appMain.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css" />
+    <style>
+        html, body, ion-app, ion-content {
+            height: 100%;
+        }
+
+        .example-content {
+            height: 100%;
+        }
+
+        .scroll {
+            height: 100%;
+        }
+    </style>
 </head>
+
 <body>
+    <ion-app>
+        <!-- <ion-header>
+            <ion-toolbar>
+                <ion-title>CENSO App - 2023</ion-title>
+            </ion-toolbar>
+        </ion-header> -->
     
+        <!-- <ion-content>
+            <ion-page id="home-page">
+                <p>Escritorio</p>
+            </ion-page>
+            <ion-page id="register-page">
+                <p>Registro</p>
+            </ion-page>
+        </ion-content> -->
+        
+        <ion-tabs>
+            <ion-tab tab="home-page">
+                <!-- <ion-nav id="home-nav"></ion-nav> -->
+                <ion-header>
+                    <ion-toolbar>
+                        <ion-title>CENSO App - Escritorio</ion-title>
+                    </ion-toolbar>
+                </ion-header>
+                <ion-content>
+                    <ion-page id="home-screen">
+                        <div class="example-content" style="display: flex; flex-direction: column;">
+                        <p>- AGREGAR UNA PERSONA</p>
+                        <p>- LISTADO DE PERSONAS CON FILTRO</p>
+                        <p>- INDICADOR DE CENSADOS TOTALES</p>
+                        <p>- WIDGET DE MAPA</p>
+                        </div>
+                    </ion-page>
+                </ion-content>
+            </ion-tab>
+
+            <ion-tab tab="register-page">
+                <!-- <ion-nav id="register-nav"></ion-nav> -->
+                <ion-header>
+                    <ion-toolbar>
+                        <ion-title>CENSO App - Registro</ion-title>
+                    </ion-toolbar>
+                </ion-header>
+                <ion-content>
+                    <ion-page id="register-screen">
+                        <div class="example-content">Contenido Registro</div>
+                    </ion-page>
+                </ion-content>
+            </ion-tab>
+            
+            <ion-tab-bar slot="bottom">
+              <ion-tab-button tab="home-page">
+                <ion-icon name="home-outline"></ion-icon>
+                Escritorio
+              </ion-tab-button>
+              <ion-tab-button tab="register-page">
+                <ion-icon name="person-add-outline"></ion-icon>
+                Registro
+              </ion-tab-button>
+            </ion-tab-bar>
+          </ion-tabs>
+    </ion-app>
+
+    <!-- <ion-app>
+        <ion-page id="pageSplash">
+            <p>CENSO 2023 SPLASH</p>
+        </ion-page>
+
+        
+        <ion-page id="pageLogin">
+            <p>CENSO 2023 LOGIN</p>
+        </ion-page>
+
+        
+        <ion-page id="pageLogin">
+            <p>CENSO 2023 REGISTER</p>
+        </ion-page>
+
+   
+        <ion-page id="pageHome">
+            <ion-tabs>
+                <ion-tab tab="home">
+                    <ion-nav id="home-nav"></ion-nav>
+                    <div id="home-page">
+                        <ion-header>
+                            <ion-toolbar>
+                                <ion-title>Censo 2023 - Home</ion-title>
+                            </ion-toolbar>
+                        </ion-header>
+                        <ion-content>
+                            <div class="example-content">HOME CONTENT</div>
+                        </ion-content>
+                    </div>
+                </ion-tab>
+                <ion-tab-bar slot="bottom">
+                    <ion-tab-button tab="home">
+                        <ion-icon name="home-outline"></ion-icon>
+                        Home
+                    </ion-tab-button>
+                </ion-tab-bar>
+            </ion-tabs>
+        </ion-page>
+    </ion-app> -->
 </body>
+
 </html>

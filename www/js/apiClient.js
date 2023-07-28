@@ -7,12 +7,12 @@ export default class APIClient {
     }
 
     /**
-     * Fetches a resource from the specified endpoint.
+     * Obtiene un recurso por medio de un endpoint específico.
      * -----------------------------------------------
-     * @param {string} endpoint - The endpoint to fetch the resource from.
-     * @param {object} options - (optional) Additional options for the fetch request.
-     * @param {number} attempt - (optional) The number of the current attempt (used for retrying).
-     * @return {Promise<any>} - A promise that resolves with the fetched resource.
+     * @param {string} endpoint - La URL desde donde se quiere obtener la información.
+     * @param {object} options - (opcional) Objeto de opciones adicionales para el método fetch.
+     * @param {number} attempt - (opcional) El número de reintentos en la request.
+     * @return {Promise<any>} - El objeto promise que se resuelve con el resultado de la petición.
      */
     async fetchResource(endpoint, options = {}, attempt = 1) {
         const url = `${this.baseURL}${endpoint}`;
@@ -27,7 +27,7 @@ export default class APIClient {
         const settings = Object.assign({ headers }, options);
 
         let response;
-        debugger
+        
         try {
             // await automatically extracts and assigns the data returned by a promise to a variable.
             // The await supplements the then() function.However, it doesn't supplement the catch(). 
@@ -48,7 +48,7 @@ export default class APIClient {
         return response.json();
     }
 
-    // Method-based operations
+    // Operaciones en base a métodos HTTP
     get(endpoint) {
         return this.fetchResource(endpoint);
     }
