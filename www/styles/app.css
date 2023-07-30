@@ -1,0 +1,186 @@
+html, * {
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+html, body, ion-app, ion-content {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+ion-toolbar {
+    --opacity: 0.5;
+}
+
+.example-content {
+    height: 100%;
+}
+
+.scroll {
+    height: 100%;
+}
+
+.h-screen {
+    height: 100vh;
+}
+
+.w-screen {
+    width: 100vh;
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-row {
+    flex-direction: row;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.align-content-start {
+    align-content: flex-start;
+}
+
+.align-content-center {
+    align-content: center;
+}
+
+.align-content-end {
+    align-content: flex-end;
+}
+
+.align-content-between {
+    align-content: space-between;
+}
+
+/**
+* Typography
+*/
+.font-bold {
+    font-weight: bold;
+}
+
+.text-black {
+    color: rgb(0, 0, 0);
+}
+
+.text-white {
+    color: rgb(255, 255, 255);
+}
+
+.text-slate-50 {
+    color: rgb(248 250 252);
+}
+
+.text-slate-100 {
+    color: rgb(241 245 249);
+}
+
+.text-slate-300 {
+    color: rgb(203 213 225);
+}
+
+.text-gray-700 {
+    color: rgb(55 65 81);
+}
+
+.text-gray-800 {
+    color: rgb(31 41 55);
+}
+
+.text-gray-900 {
+    color: rgb(17 24 39);
+}
+
+/**
+* Generics
+*/
+.w-20 {
+    width: 20%;
+}
+
+.w-50 {
+    width: 50%;
+}
+
+.w-80 {
+    width: 80%;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.mx-half {
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+.border-half {
+    border-radius: 0.8rem;
+}
+
+
+
+/**
+* Containers
+*/
+.container {
+    background-color: rgba(238, 232, 232, 0.783);
+    padding: 0.2rem;
+}
+
+ion-toast::part(container) {
+    background-color: red;
+    color: #fff;
+    border-radius: 0.5rem;
+    text-align: center;
+}
+
+ion-content.bg-splash::part(background) {
+    background: url('../img/splash.png') no-repeat center center;
+    background-size: cover;
+}
+
+/**
+* Inputs
+*/
+
+input {
+    border-radius: 0.3rem;
+    border: 0.063rem solid #ccd7e9;
+    padding: 0.40rem 0.80rem;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.bg-splash {
+    background: url('../img/splash.png') no-repeat center center;
+    background-size: cover;
+}
+
+.bg-splash::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5));
+    pointer-events: none;
+}
+
+.bg-splash::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5));
+    pointer-events: none;
+    z-index: -1;
+}

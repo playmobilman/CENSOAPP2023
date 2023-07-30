@@ -23,34 +23,39 @@ export default class APIClient {
         if (this.authToken) {
             headers['Authorization'] = `Bearer ${this.authToken}`;
         }
-
-        const settings = Object.assign({ headers }, options);
-
+        const settings = Object.assign({headers}, options);
         let response;
         
         try {
             // await automatically extracts and assigns the data returned by a promise to a variable.
-            // The await supplements the then() function.However, it doesn't supplement the catch(). 
+            // The await supplements the then() function.
+            // However, it doesn't supplement the catch().
             response = await fetch(url, settings);
         } catch (error) {
-            if (attempt < this.retryAttempts) {
-                await new Promise(resolve => setTimeout(resolve, this.retryDelay));
-                return this.fetchResource(endpoint, options, attempt + 1);
-            }
+            // if (attempt < this.retryAttempts) {
+            //     await new Promise(resolve => setTimeout(resolve, this.retryDelay));
+            //     return this.fetchResource(endpoint, options, attempt + 1);
+            // }
             throw error;
         }
 
         if (!response.ok) {
-            const body = await response.text();
-            throw new Error(`HTTP error! status: ${response.status}, body: ${body}`);
+            const body = await response.json();
+            //console.log(body);
+            throw new Error(body.mensaje);
+            //throw new Error(`HTTP error! status: ${response.status}, body: ${body}`);
         }
 
         return response.json();
     }
 
     // Operaciones en base a métodos HTTP
-    get(endpoint) {
-        return this.fetchResource(endpoint);
+    get(endpoint, headers = {}) {
+        const options = {
+            method: 'GET',
+            headers: headers,
+        };
+        return this.fetchResource(endpoint, options);
     }
 
     post(endpoint, body) {
