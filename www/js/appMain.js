@@ -135,21 +135,31 @@ function StartApp() {
     if (LOGIN_BUTTON) LOGIN_BUTTON.addEventListener('click', LogIn);
 
     const LOGOUT_BUTTON = document.querySelector('#btn-logout');
-    if (LOGOUT_BUTTON) LOGOUT_BUTTON.addEventListener('click', LogOut);
+    //if (LOGOUT_BUTTON) LOGOUT_BUTTON.addEventListener('click', LogOut);
+
+    let logoutButtons = document.querySelectorAll('.btn-logout');
+    logoutButtons.forEach(btn => {
+        btn.addEventListener('click', LogOut);
+    });
     
     const REGISTER_CENSUS_TAKER_BUTTON = document.querySelector('#btnCensusRegister');
     if (REGISTER_CENSUS_TAKER_BUTTON) REGISTER_CENSUS_TAKER_BUTTON.addEventListener('click', RegisterCensusTaker);
 
     const REGISTER_BUTTON = document.querySelector('#btn-register');
     if (REGISTER_BUTTON) REGISTER_BUTTON.addEventListener('click', RegisterUser);
-    
+
+    const REGISTER_CENSUS_PERSON_BUTTON = document.querySelector('#btn-register-census-person');
+    if (REGISTER_CENSUS_PERSON_BUTTON) REGISTER_CENSUS_PERSON_BUTTON.addEventListener('click', RegisterPerson);
+
+    //loadDepartments();
+    //loadCities();
+
     //hideScreens();
     if (checkSession()) {
         LOGIN_PAGE.className = 'ion-hide';
         HOME_PAGE.className = '';
         HOME_PAGE.className = 'ion-page';
         switchActiveTab('home-page');
-        getTotalCensus();
     } else {
         LOGIN_PAGE.className = 'ion-page';
         HOME_PAGE.className = '';
@@ -158,8 +168,46 @@ function StartApp() {
     }
 }
 
+function loadDepartments() {
+    let slDepartments = document.querySelector('#slUserDepartment');
+    const apiKey = localStorage.getItem('censo-user-token');
+    const idUser = localStorage.getItem('censo-user-id');
+    client.get('/departamentos.php', {
+        apikey: apiKey,
+        iduser: idUser
+    }).then(data => {
+        console.log(data.departamentos);
+        let departmentOptions = data.departamentos.map(opt => `<option value="${opt.id}">${opt.nombre}</option>`).join('');
+        slDepartments.innerHTML = departmentOptions;
+        slDepartments.addEventListener('change', (evt) => {
+            let selectedDeptId = evt.target.value;
+            loadCities(selectedDeptId);
+        });
+    })
+    .catch(error => {
+        showToastResult(error.message, 3000);
+    });
+}
+
+function loadCities(deptId) {
+    let slCities = document.querySelector('#slUserCity');
+    const apiKey = localStorage.getItem('censo-user-token');
+    const idUser = localStorage.getItem('censo-user-id');
+
+    client.get(`/ciudades.php?idDepartamento=${deptId}`, {
+        apikey: apiKey,
+        iduser: idUser
+    }).then(data => {
+        console.log(data.ciudades);
+        let ciudadesOptions = data.ciudades.map(opt => `<option value="${opt.id}">${opt.nombre}</option>`).join('');
+        slCities.innerHTML = ciudadesOptions;
+    })
+    .catch(error => {
+        showToastResult(error.message, 3000);
+    });
+}
+
 function LogIn() {
-    //debugger;
     const USERNAME = document.querySelector("#txtCensusUser").value;
     const PASSWORD = document.querySelector("#txtCensusPassword").value;
 
@@ -178,6 +226,7 @@ function LogIn() {
             localStorage.setItem('censo-user-token', data.apiKey);
             localStorage.setItem('censo-user-id', data.id);
             switchActiveTab('home-page');
+            loadDepartments();
             getTotalCensus();
             LOGIN_PAGE.className = 'ion-hide';
             HOME_PAGE.className = 'ion-page';
@@ -185,7 +234,7 @@ function LogIn() {
         })
         .catch(error => {
             clearFields();
-            showToastResult(error.message);
+            showToastResult(error.message, 3000);
         });
     }
 }
@@ -226,7 +275,50 @@ function RegisterCensusTaker() {
         })
         .catch(error => {
             clearFields();
-            showToastResult(error.message);
+            showToastResult(error.message, 3000);
+        });
+    }
+}
+
+function RegisterPerson() {
+    const CENSUS_USER_NAME = document.querySelector("#txtUserCensusName").value;
+    const CENSUS_USER_DEPARTMENT = document.querySelector("#slUserDepartment").value;
+    const CENSUS_USER_CITY = document.querySelector("#slUserCity").value;
+    const CENSUS_USER_DOB = document.querySelector("#txtDoB").value;
+    const CENSUS_USER_OCCUPATION = document.querySelector("#txtUserCensusOccupation").value;
+
+    if (CENSUS_USER_NAME === '' || CENSUS_USER_DEPARTMENT === '' || CENSUS_USER_CITY === '' || CENSUS_USER_DOB === '' || CENSUS_USER_OCCUPATION === '') {
+        showAlert({
+            header: "Espera!",
+            subHeader: "Error",
+            message: "Los datos de acceso son obligatorios!"
+        });
+        clearFields();
+        return;
+    } else {
+        client.post('/personas.php', {
+            idUsuario: localStorage.getItem('censo-user-id'),
+            nombre: CENSUS_USER_NAME,
+            departamento: CENSUS_USER_DEPARTMENT,
+            ciudad: CENSUS_USER_CITY,
+            fechaNacimiento: CENSUS_USER_DOB,
+            ocupacion: '3' // Cambiar por valor seleccionado en el select.
+        }, {
+            apikey: localStorage.getItem('censo-user-token'),
+            iduser: localStorage.getItem('censo-user-id')
+        }).then(data => {
+            localStorage.setItem('censo-user-token', data.apiKey);
+            localStorage.setItem('censo-user-id', data.id);
+            switchActiveTab('home-page');
+            showToastResult(data.mensaje, 3000, 'toast-success');
+            getTotalCensus();
+            CENSUS_TAKER_REGISTER_PAGE.className = 'ion-hide';
+            HOME_PAGE.className = 'ion-page';
+            //REGISTER_NAV.root = HOME_SCREEN;
+        })
+        .catch(error => {
+            clearFields();
+            showToastResult(error.message, 3000);
         });
     }
 }
@@ -252,7 +344,9 @@ function getTotalCensus() {
         iduser: idUser
     }).then(data => {
         console.log(data.total);
-        document.querySelector('#totalCensusIndicator').textContent = `Total: ${data.total}`
+        let totalCensusIndicator = document.querySelector('#totalCensusIndicator'); 
+        totalCensusIndicator.innerHTML = '';
+        totalCensusIndicator.textContent = `Total: ${data.total} hab.`
     })
     .catch(error => {
         redirectToLogin(error.message);
@@ -265,16 +359,16 @@ function redirectToLogin(showToast = true, message = 'La sesión ha expirado, ac
     HOME_PAGE.className = 'ion-hide';
     clearFields();
     if (showToast) {
-        showToastResult(message);
+        showToastResult(message, 3000);
     }
 }
 
-async function showToastResult(message, duration = 2500) {
+async function showToastResult(message, duration = 2500, toastType='error-toast') {
     const toast = document.createElement('ion-toast');
     toast.message = message;
     toast.duration = duration;
     toast.position = 'bottom';
-    toast.classList.add("error-toast");
+    toast.classList.add(toastType);
     document.body.appendChild(toast);
     return await toast.present();
 }

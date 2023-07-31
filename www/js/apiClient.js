@@ -23,6 +23,7 @@ export default class APIClient {
         if (this.authToken) {
             headers['Authorization'] = `Bearer ${this.authToken}`;
         }
+
         const settings = Object.assign({headers}, options);
         let response;
         
@@ -58,9 +59,10 @@ export default class APIClient {
         return this.fetchResource(endpoint, options);
     }
 
-    post(endpoint, body) {
+    post(endpoint, body, headers = {}) {
         const options = {
             method: 'POST',
+            headers: headers,
             body: JSON.stringify(body),
         };
         return this.fetchResource(endpoint, options);

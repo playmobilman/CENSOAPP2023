@@ -140,6 +140,13 @@ ion-toast::part(container) {
     text-align: center;
 }
 
+.toast-success::part(container) {
+    background-color: rgb(104, 200, 120);
+    color: #fff;
+    border-radius: 0.5rem;
+    text-align: center;
+}
+
 ion-content.bg-splash::part(background) {
     background: url('../img/splash.png') no-repeat center center;
     background-size: cover;

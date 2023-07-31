@@ -169,47 +169,110 @@
         <!-- HOME -->
         <page-app class="ion-page ion-hide" id="app-screen">
             <ion-tabs>
+                <!-- TAB HOME -->
                 <ion-tab tab="home-page">
                     <ion-nav id="home-nav"></ion-nav>
-                        <ion-header class="ion-no-border">
-                            <ion-toolbar>
-                                <ion-title class="ion-text-center">CENSO App - Escritorio</ion-title>
-                                <ion-buttons slot="primary">
-                                    <ion-button id="btn-logout">
-                                        <ion-icon slot="icon-only" color="primary" name="exit-outline"></ion-icon>
-                                    </ion-button>
-                                </ion-buttons>
-                            </ion-toolbar>
-                        </ion-header>
-                        <ion-content fullscreen="true" class="ion-padding bg-splash">
-                            <div style="flex: 1; overflow-y: auto;">
-                                <ion-text color="white">
-                                    <h1 class="ion-text-center text-white">Estado del Censo</h1>
-                                </ion-text>
-                                <ion-card color="primary ion-margin-top">
-                                    <ion-card-header>
-                                        <h2 class="ion-no-margin">Poblaci&oacute;n censada</h2>
-                                        <h3 id="totalCensusIndicator"></h3>
-                                    </ion-card-header>
-                                </ion-card>
-                            </div> 
-                        </ion-content>
-                </ion-tab>
-    
-                <ion-tab tab="register-page">
-                    <ion-nav id="register-nav"></ion-nav>
-                    <ion-header>
+                    <ion-header class="ion-no-border">
                         <ion-toolbar>
-                            <ion-title>CENSO App - Registro</ion-title>
+                            <ion-title class="ion-text-center">CENSO App - Escritorio</ion-title>
+                            <ion-buttons slot="primary">
+                                <ion-button id="btn-logout" class="btn-logout">
+                                    <ion-icon slot="icon-only" color="primary" name="exit-outline"></ion-icon>
+                                </ion-button>
+                            </ion-buttons>
                         </ion-toolbar>
                     </ion-header>
-                    <ion-content>
-                        <div id="register-screen">
-                            <div class="example-content">Contenido Registro</div>
-                        </div>
+                    <ion-content fullscreen="true" class="ion-padding bg-splash">
+                        <div style="flex: 1; overflow-y: auto;">
+                            <ion-text color="white">
+                                <h1 class="ion-text-center text-white">Estado del Censo</h1>
+                            </ion-text>
+                            <ion-card color="primary ion-margin-top">
+                                <ion-card-header>
+                                    <h2 class="ion-no-margin">Poblaci&oacute;n censada</h2>
+                                    <h3 id="totalCensusIndicator">Cargando...</h3>
+                                </ion-card-header>
+                            </ion-card>
+                        </div> 
                     </ion-content>
                 </ion-tab>
                 
+                <!-- TAB REGISTRO PERSONA -->
+                <ion-tab tab="register-page">
+                    <ion-nav id="register-nav"></ion-nav>
+                    <ion-header class="ion-no-border">
+                        <ion-toolbar>
+                            <ion-title class="ion-text-center">CENSO App - Registro persona</ion-title>
+                            <ion-buttons slot="primary">
+                                <ion-button id="btn-logout" class="btn-logout">
+                                    <ion-icon slot="icon-only" color="primary" name="exit-outline"></ion-icon>
+                                </ion-button>
+                            </ion-buttons>
+                        </ion-toolbar>
+                    </ion-header>
+                    <ion-content fullscreen="true" class="ion-padding bg-splash">
+                        <div style="flex: 1; overflow-y: auto;">
+                            <!-- FORM REGISTRO PERSONA -->
+                            <ion-grid class="ion-no-padding">
+                                <ion-row>
+                                    <ion-grid class="ion-no-margin container w-full">
+                                        <ion-row class="ion-justify-content-center">
+                                            <p class="ion-text-center ion-color-primary text-gray-700 font-bold">Registro de nueva persona</p>
+                                        </ion-row>
+                                        <ion-row class="ion-justify-content-center ion-margin-top ion-margin-bottom">
+                                            <ion-col class="ion-text-center">
+                                                <input class="w-80" placeholder="Nombre" type="text" name="userCensusName" id="txtUserCensusName">
+                                            </ion-col>
+                                        </ion-row>
+                                        <ion-row class="ion-justify-content-center ion-margin-top ion-margin-bottom">
+                                            <ion-col class="ion-text-center">
+                                                <select class="w-80" placeholder="Departamento" name="userCensusDepartment" id="slUserDepartment">
+                                                    <option value="-1">Departamento...</option>
+                                                </select>
+                                            </ion-col>
+                                        </ion-row>
+                                        <ion-row class="ion-justify-content-center ion-margin-top ion-margin-bottom">
+                                            <ion-col class="ion-text-center">
+                                                <select class="w-80" placeholder="Ciudad" name="userCensusCity" id="slUserCity">
+                                                    <option value="-1">Ciudad...</option>
+                                                </select>
+                                            </ion-col>
+                                        </ion-row>
+                                        <ion-row class="ion-justify-content-center ion-margin-top ion-margin-bottom">
+                                            <ion-col class="ion-text-center">
+                                                <input class="w-80" placeholder="Fecha de nacimiento" type="date" name="userCensusDoB" id="txtDoB"></input>
+                                            </ion-col>
+                                        </ion-row>
+                                        <ion-row class="ion-justify-content-center ion-margin-top ion-margin-bottom">
+                                            <ion-col class="ion-text-center">
+                                                <!-- TESTEO DE VALOR DE OCUPACION -->
+                                                <input class="w-80" placeholder="Ocupaci&oacute;n" type="text" name="userCensusOccupation" id="txtUserCensusOccupation" value="3">
+                                            </ion-col>
+                                        </ion-row>
+                                        <ion-row class="ion-justify-content-center ion-margin-top ion-margin-bottom">
+                                            <ion-col class="ion-text-center ion-margin-top ion-margin-bottom">
+                                                <ion-button expand="block" id="btn-register-census-person" color="primary" fill="solid" class="ion-margin-start ion-margin-top ion-margin-end">
+                                                    <ion-icon slot="start" name="person-circle"></ion-icon>
+                                                    Registrar persona
+                                                </ion-button>
+                                                
+                                                <ion-alert
+                                                    id="alert-census-user-empty-fields"
+                                                    trigger="present-alert"
+                                                    header="CensoAPP"
+                                                    sub-header="Espera!"
+                                                    message="Todos los campos son obligatorios.">
+                                                </ion-alert>
+                                            </ion-col>
+                                        </ion-row>
+                                    </ion-grid>
+                                </ion-row>
+                            </ion-grid>
+                        </div> 
+                    </ion-content>
+                </ion-tab>
+                
+                <!-- TAB-BAR -->
                 <ion-tab-bar slot="bottom">
                   <ion-tab-button tab="home-page" id="tab-home">
                     <ion-icon name="speedometer-outline"></ion-icon>
