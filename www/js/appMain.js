@@ -10,6 +10,8 @@ const FIELD_PASSWORD = document.querySelector("#txtCensusPassword");
 const HOME_NAV = document.querySelector('#home-nav');
 const REGISTER_NAV = document.querySelector('#register-nav');
 
+let OCCUPATIONS = [];
+
 function clearFields() {
 
     let inputs = document.querySelectorAll('input[type="email"], input[type="text"], input[type="password"]');
@@ -78,6 +80,7 @@ function StartApp() {
 
     //loadDepartments();
     //loadCities();
+    getOccupations();
 
     bindNavigationTabs();
 
@@ -151,6 +154,11 @@ function loadDepartments() {
             let selectedDeptId = evt.target.value;
             loadCities(selectedDeptId);
         });
+
+        // Disparar evento 'change' para cargar combos por defecto.
+        slDepartments.selectedIndex = 0;
+        const listUpdatedEvt = new Event('change', { bubbles: true, cancelable: true });
+        slDepartments.dispatchEvent(listUpdatedEvt);
     })
     .catch(error => {
         showToastResult(error.message, 3000);
@@ -175,16 +183,29 @@ function loadCities(deptId) {
     });
 }
 
-function loadOccupations() {
-    let slOccupations = document.querySelector('#slUserOccupation');
+function getOccupations() {
     const apiKey = localStorage.getItem('censo-user-token');
     const idUser = localStorage.getItem('censo-user-id');
-
     client.get('/ocupaciones.php', {
         apikey: apiKey,
         iduser: idUser
     }).then(data => {
-        console.log(data.ocupaciones);
+        OCCUPATIONS = data.ocupaciones;
+    })
+    .catch(error => {
+        showToastResult(error.message, 3000);
+    });
+}
+
+// CARGA LAS OCUPACIONES EN EL COMBO DE OCUPACIONES
+function loadOccupations() {
+    let slOccupations = document.querySelector('#slUserOccupation');
+    const apiKey = localStorage.getItem('censo-user-token');
+    const idUser = localStorage.getItem('censo-user-id');
+    client.get('/ocupaciones.php', {
+        apikey: apiKey,
+        iduser: idUser
+    }).then(data => {
         let occupationOptions = data.ocupaciones.map(opt => `<option value="${opt.id}">${opt.ocupacion}</option>`).join('');
         slOccupations.innerHTML = occupationOptions;
     })
@@ -193,17 +214,28 @@ function loadOccupations() {
     });
 }
 
+// CARGA DE LA LISTA DE PERSONAS
 function loadPersons() {
-    debugger;
     const apiKey = localStorage.getItem('censo-user-token');
     const idUser = localStorage.getItem('censo-user-id');
-
+    let personsDataList = document.querySelector('#persons-data-list'); 
+    
     client.get(`/personas.php?idUsuario=${idUser}`, {
         apikey: apiKey,
         iduser: idUser
     }).then(data => {
         console.log(data.personas);
-        //TODO - Cargar lista de personas
+        console.log(OCCUPATIONS);
+
+        let personListItems = data.personas.map(item => `<ion-item>
+                                                            <ion-label>
+                                                                <h1>${item.nombre}</h1>
+                                                                <h2 class="ion-margin-top">${OCCUPATIONS.filter(occ => occ.id === item.ocupacion)[0].ocupacion}</h2>
+                                                                <p class="ion-margin-top">${item.fechaNacimiento}</p>
+                                                            </ion-label>
+                                                            <ion-icon slot="end" color="danger" name="trash"></ion-icon>
+                                                        </ion-item>`).join('');
+        personsDataList.innerHTML = personListItems;
     })
     .catch(error => {
         showToastResult(error.message, 3000);
