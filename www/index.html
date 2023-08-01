@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="styles/app.css" />
     <script type="module">
         import * as appUI from './js/appMain.js';
-        document.addEventListener('DOMContentLoaded', (evt) => {
+        window.addEventListener('load', (evt) => {
             appUI.StartApp();
         });
     </script>
@@ -246,7 +246,10 @@
                                         <ion-row class="ion-justify-content-center ion-margin-top ion-margin-bottom">
                                             <ion-col class="ion-text-center">
                                                 <!-- TESTEO DE VALOR DE OCUPACION -->
-                                                <input class="w-80" placeholder="Ocupaci&oacute;n" type="text" name="userCensusOccupation" id="txtUserCensusOccupation" value="3">
+                                                <!-- <input class="w-80" placeholder="Ocupaci&oacute;n" type="text" name="userCensusOccupation" id="txtUserCensusOccupation" value="3"> -->
+                                                <select class="w-80" placeholder="Ocupación" name="userOccupation" id="slUserOccupation">
+                                                    <option value="-1">Ocupación...</option>
+                                                </select>
                                             </ion-col>
                                         </ion-row>
                                         <ion-row class="ion-justify-content-center ion-margin-top ion-margin-bottom">
@@ -269,6 +272,24 @@
                                 </ion-row>
                             </ion-grid>
                         </div> 
+                    </ion-content>
+                </ion-tab>
+
+                <!-- TAB LISTA PERSONAS -->
+                <ion-tab tab="census-list-page">
+                    <ion-nav id="register-nav"></ion-nav>
+                    <ion-header class="ion-no-border">
+                        <ion-toolbar>
+                            <ion-title class="ion-text-center">CENSO App - Lista de personas</ion-title>
+                            <ion-buttons slot="primary">
+                                <ion-button id="btn-logout" class="btn-logout">
+                                    <ion-icon slot="icon-only" color="primary" name="exit-outline"></ion-icon>
+                                </ion-button>
+                            </ion-buttons>
+                        </ion-toolbar>
+                    </ion-header>
+                    <ion-content fullscreen="true">
+
                     </ion-content>
                 </ion-tab>
                 

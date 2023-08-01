@@ -1,74 +1,6 @@
 import APIClient from './apiClient.js';
 const client = new APIClient("https://censo.develotion.com/");
 
-/**
- * UI Mechanism
- */
-
-// BACKUP CODE
-//------------------------------------------------------------------------------------------
-// const ruteo = document.querySelector("#ruteo");
-// ruteo.addEventListener("ionRouteWillChange", NavegarEntrePaginas);
-// document.querySelector("#btnListado").addEventListener("click", RedireccionarAListado);
-
-// function NavegarEntrePaginas(event) {
-//     console.log(event);
-//     OcultarPaginas();
-//     if (event.detail.to == "/") {
-//         document.querySelector("#page-one").style.display = "block";
-//         //document.querySelector("#page-two").style.display = "none";
-//         //document.querySelector("#page-listado").style.display = "none";
-//     }
-//     else if (event.detail.to == "/page-listado") {
-//         //document.querySelector("#page-one").style.display = "none";
-//         // document.querySelector("#page-two").style.display = "none";
-//         document.querySelector("#page-listado").style.display = "block";
-
-//     }
-//     else {
-
-//         // document.querySelector("#page-one").style.display = "none";
-//         document.querySelector("#page-two").style.display = "block";
-//         //document.querySelector("#page-listado").style.display = "none";
-//     }
-// }
-
-// function CerrarMenu() {
-//     document.querySelector("#menu").close();
-// }
-
-// function RedireccionarAListado() {
-//     ruteo.push("/page-listado");
-// }
-
-// function OcultarPaginas() {
-//     let pages = document.querySelectorAll("ion-page");
-
-//     for (let i = 0; i < pages.length; i++) {
-//         pages[i].style.display = "none";
-//     }
-// }
-
-// LOGIN
-// client.post("/login.php", {
-//     usuario: "censo",
-//     password: "censo"
-// }).then(data => {
-//     console.log(data);
-//     localStorage.setItem('censo-user-token', data.apiKey);
-// })
-// .catch(error => console.error(error));
-
-// REGISTRO
-// client.post("/usuarios.php", {
-//     usuario: "mschmid.3712",
-//     password: "mschmid"
-// }).then(userData => {
-//     console.log(userData);
-// })
-// .catch(error => console.error(error));
-
-const ROUTER = document.querySelector("#appRouter");
 const LOGIN_PAGE = document.querySelector("#login-screen");
 const HOME_PAGE = document.querySelector("#app-screen");
 const CENSUS_TAKER_REGISTER_PAGE = document.querySelector('#census-taker-register-screen');
@@ -77,11 +9,6 @@ const FIELD_USERNAME = document.querySelector("#txtCensusUser");
 const FIELD_PASSWORD = document.querySelector("#txtCensusPassword");
 const HOME_NAV = document.querySelector('#home-nav');
 const REGISTER_NAV = document.querySelector('#register-nav');
-
-
-function checkSession() {
-    return localStorage.getItem('censo-user-token');
-}
 
 function clearFields() {
 
@@ -127,8 +54,6 @@ function switchActiveTab(targetTabName) {
     targetTab.dispatchEvent(clickEvent);
 }
 
-
-
 function StartApp() {
     
     const LOGIN_BUTTON = document.querySelector('#btnLogin');
@@ -154,8 +79,10 @@ function StartApp() {
     //loadDepartments();
     //loadCities();
 
+    bindNavigationTabs();
+
     //hideScreens();
-    if (checkSession()) {
+    if (localStorage.getItem('censo-user-token') !== null) {
         LOGIN_PAGE.className = 'ion-hide';
         HOME_PAGE.className = '';
         HOME_PAGE.className = 'ion-page';
@@ -165,6 +92,47 @@ function StartApp() {
         HOME_PAGE.className = '';
         HOME_PAGE.className = 'ion-hide';
         //ROUTER.push('/login');
+    }
+}
+
+
+
+function LogIn() {
+    const USERNAME = document.querySelector("#txtCensusUser").value;
+    const PASSWORD = document.querySelector("#txtCensusPassword").value;
+
+    if (USERNAME === "" || PASSWORD === "") {
+        showAlert({
+            header: "Espera!",
+            subHeader: "Error",
+            message: "Los datos de acceso son obligatorios!"
+        });
+        return;
+    } else {
+        client.post('/login.php', {
+            usuario: USERNAME,
+            password: PASSWORD
+        }).then(data => {
+            localStorage.setItem('censo-user-token', data.apiKey);
+            localStorage.setItem('censo-user-id', data.id);
+            
+            LOGIN_PAGE.className = 'ion-hide';
+            HOME_PAGE.className = 'ion-page';
+
+            // TODO: DELEGAR A UNA FUNCION 'UIListener' QUE ESCUCHE TODAS LAS INTERACCIONES CON EL TAB BAR PRINCIPAL
+            bindNavigationTabs();
+            switchActiveTab('home-page');
+            
+            //loadDepartments();
+            //loadOccupations();
+            //getTotalCensus();
+
+            //REGISTER_NAV.root = HOME_SCREEN;
+        })
+        .catch(error => {
+            clearFields();
+            showToastResult(error.message, 3000);
+        });
     }
 }
 
@@ -207,36 +175,58 @@ function loadCities(deptId) {
     });
 }
 
-function LogIn() {
-    const USERNAME = document.querySelector("#txtCensusUser").value;
-    const PASSWORD = document.querySelector("#txtCensusPassword").value;
+function loadOccupations() {
+    let slOccupations = document.querySelector('#slUserOccupation');
+    const apiKey = localStorage.getItem('censo-user-token');
+    const idUser = localStorage.getItem('censo-user-id');
 
-    if (USERNAME === "" || PASSWORD === "") {
-        showAlert({
-            header: "Espera!",
-            subHeader: "Error",
-            message: "Los datos de acceso son obligatorios!"
-        });
-        return;
-    } else {
-        client.post('/login.php', {
-            usuario: USERNAME,
-            password: PASSWORD
-        }).then(data => {
-            localStorage.setItem('censo-user-token', data.apiKey);
-            localStorage.setItem('censo-user-id', data.id);
-            switchActiveTab('home-page');
-            loadDepartments();
-            getTotalCensus();
-            LOGIN_PAGE.className = 'ion-hide';
-            HOME_PAGE.className = 'ion-page';
-            //REGISTER_NAV.root = HOME_SCREEN;
-        })
-        .catch(error => {
-            clearFields();
-            showToastResult(error.message, 3000);
-        });
-    }
+    client.get('/ocupaciones.php', {
+        apikey: apiKey,
+        iduser: idUser
+    }).then(data => {
+        console.log(data.ocupaciones);
+        let occupationOptions = data.ocupaciones.map(opt => `<option value="${opt.id}">${opt.ocupacion}</option>`).join('');
+        slOccupations.innerHTML = occupationOptions;
+    })
+    .catch(error => {
+        showToastResult(error.message, 3000);
+    });
+}
+
+function loadPersons() {
+    debugger;
+    const apiKey = localStorage.getItem('censo-user-token');
+    const idUser = localStorage.getItem('censo-user-id');
+
+    client.get(`/personas.php?idUsuario=${idUser}`, {
+        apikey: apiKey,
+        iduser: idUser
+    }).then(data => {
+        console.log(data.personas);
+        //TODO - Cargar lista de personas
+    })
+    .catch(error => {
+        showToastResult(error.message, 3000);
+    });
+}
+
+function bindNavigationTabs() {
+    const BTN_TAB_HOME = document.querySelector('#tab-button-home-page');
+    const BTN_TAB_REGISTER = document.querySelector('#tab-button-register-page');
+    const BTN_TAB_PERSONS = document.querySelector('#tab-button-census-list-page');
+    //const BTN_TAB_SEARCH = document.querySelector('#tab-button-search-page');
+    //const BTN_TAB_MAP = document.querySelector('#tab-button-map-page');
+
+    if (BTN_TAB_HOME) BTN_TAB_HOME.addEventListener('click', getTotalCensus);
+    
+    if (BTN_TAB_REGISTER) BTN_TAB_REGISTER.addEventListener('click', function() {
+        loadDepartments();
+        loadOccupations();
+    });
+    
+    if (BTN_TAB_PERSONS) BTN_TAB_PERSONS.addEventListener('click', loadPersons);
+    //if (BTN_TAB_SEARCH) BTN_TAB_SEARCH.addEventListener('click', function() {});
+    //if (BTN_TAB_MAP) BTN_TAB_MAP.addEventListener('click', function() {});
 }
 
 function RegisterCensusTaker() {
@@ -285,7 +275,7 @@ function RegisterPerson() {
     const CENSUS_USER_DEPARTMENT = document.querySelector("#slUserDepartment").value;
     const CENSUS_USER_CITY = document.querySelector("#slUserCity").value;
     const CENSUS_USER_DOB = document.querySelector("#txtDoB").value;
-    const CENSUS_USER_OCCUPATION = document.querySelector("#txtUserCensusOccupation").value;
+    const CENSUS_USER_OCCUPATION = document.querySelector("#slUserOccupation").value;
 
     if (CENSUS_USER_NAME === '' || CENSUS_USER_DEPARTMENT === '' || CENSUS_USER_CITY === '' || CENSUS_USER_DOB === '' || CENSUS_USER_OCCUPATION === '') {
         showAlert({
@@ -302,7 +292,7 @@ function RegisterPerson() {
             departamento: CENSUS_USER_DEPARTMENT,
             ciudad: CENSUS_USER_CITY,
             fechaNacimiento: CENSUS_USER_DOB,
-            ocupacion: '3' // Cambiar por valor seleccionado en el select.
+            ocupacion: CENSUS_USER_OCCUPATION
         }, {
             apikey: localStorage.getItem('censo-user-token'),
             iduser: localStorage.getItem('censo-user-id')
@@ -335,7 +325,6 @@ function LogOut() {
 }
 
 function getTotalCensus() {
-    
     const apiKey = localStorage.getItem('censo-user-token');
     const idUser = localStorage.getItem('censo-user-id');
     
