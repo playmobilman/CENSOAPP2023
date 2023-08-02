@@ -80,7 +80,7 @@ function StartApp() {
 
     //loadDepartments();
     //loadCities();
-    getOccupations();
+    //getOccupations();
 
     bindNavigationTabs();
 
@@ -139,6 +139,7 @@ function LogIn() {
     }
 }
 
+// CARGA LOS DEPARTAMENTOS EN EL COMBO DE DEPARTAMENTOS
 function loadDepartments() {
     let slDepartments = document.querySelector('#slUserDepartment');
     const apiKey = localStorage.getItem('censo-user-token');
@@ -165,6 +166,7 @@ function loadDepartments() {
     });
 }
 
+// CARGA LAS CIUDADES EN EL COMBO DE CIUDADES
 function loadCities(deptId) {
     let slCities = document.querySelector('#slUserCity');
     const apiKey = localStorage.getItem('censo-user-token');
@@ -183,6 +185,7 @@ function loadCities(deptId) {
     });
 }
 
+// OBTIENE LA INFORMACION DE LAS OCUPACIONES
 function getOccupations() {
     const apiKey = localStorage.getItem('censo-user-token');
     const idUser = localStorage.getItem('censo-user-id');
@@ -214,30 +217,60 @@ function loadOccupations() {
     });
 }
 
-// CARGA DE LA LISTA DE PERSONAS
-function loadPersons() {
+
+// OBTENER LA LISTA DE PERSONAS
+function getPersonsList() {
     const apiKey = localStorage.getItem('censo-user-token');
     const idUser = localStorage.getItem('censo-user-id');
-    let personsDataList = document.querySelector('#persons-data-list'); 
-    
-    client.get(`/personas.php?idUsuario=${idUser}`, {
+
+    return client.get(`/personas.php?idUsuario=${idUser}`, {
         apikey: apiKey,
         iduser: idUser
-    }).then(data => {
-        console.log(data.personas);
-        console.log(OCCUPATIONS);
+    });
+}
 
+
+// CARGA LA LISTA DE PERSONAS EN PANTALLA
+function loadPersons() {
+    let personsDataListLoader = document.querySelector('#list-loader');
+    let personsDataList = document.querySelector('#persons-data-list');
+    
+    personsDataListLoader.classList.remove('ion-hide');
+    personsDataList.innerHTML = "";
+
+    getPersonsList().then(data => {
         let personListItems = data.personas.map(item => `<ion-item>
-                                                            <ion-label>
-                                                                <h1>${item.nombre}</h1>
-                                                                <h2 class="ion-margin-top">${OCCUPATIONS.filter(occ => occ.id === item.ocupacion)[0].ocupacion}</h2>
-                                                                <p class="ion-margin-top">${item.fechaNacimiento}</p>
-                                                            </ion-label>
-                                                            <ion-icon slot="end" color="danger" name="trash"></ion-icon>
-                                                        </ion-item>`).join('');
+            <ion-label>
+                <h1>${item.nombre}</h1>
+                <h2 class="ion-margin-top">${OCCUPATIONS.filter(occ => occ.id === item.ocupacion)[0].ocupacion}</h2>
+                <p class="ion-margin-top">${item.fechaNacimiento}</p>
+            </ion-label>
+            <ion-icon slot="end" data-id="${item.id}" onclick="deletePerson(event)" color="danger" name="trash"></ion-icon>
+        </ion-item>`).join('');    
         personsDataList.innerHTML = personListItems;
-    })
-    .catch(error => {
+        personsDataListLoader.classList.add('ion-hide');
+    }).catch(error => {
+        showToastResult(error.message, 3000);
+    });
+}
+
+function loadPersonsFiltered() {
+    
+}
+
+// Se atachea la función deletePerson al objeto window, para hacerla accesible globalmente.
+window.deletePerson = function(e) {
+    const personId = e.target.dataset.id;
+    const apiKey = localStorage.getItem('censo-user-token');
+    const idUser = localStorage.getItem('censo-user-id');
+
+    client.delete(`/personas.php?idCenso=${personId}`, {
+        apikey: apiKey,
+        iduser: idUser
+    }).then(result => {
+        showToastResult(result.mensaje, 3000, 'toast-success');
+        loadPersons();
+    }).catch(error => {
         showToastResult(error.message, 3000);
     });
 }
@@ -246,10 +279,13 @@ function bindNavigationTabs() {
     const BTN_TAB_HOME = document.querySelector('#tab-button-home-page');
     const BTN_TAB_REGISTER = document.querySelector('#tab-button-register-page');
     const BTN_TAB_PERSONS = document.querySelector('#tab-button-census-list-page');
-    //const BTN_TAB_SEARCH = document.querySelector('#tab-button-search-page');
+    const BTN_TAB_SEARCH = document.querySelector('#tab-button-search-page');
     //const BTN_TAB_MAP = document.querySelector('#tab-button-map-page');
 
-    if (BTN_TAB_HOME) BTN_TAB_HOME.addEventListener('click', getTotalCensus);
+    if (BTN_TAB_HOME) BTN_TAB_HOME.addEventListener('click', function() {
+        getTotalCensus();
+        getOccupations();
+    });
     
     if (BTN_TAB_REGISTER) BTN_TAB_REGISTER.addEventListener('click', function() {
         loadDepartments();
@@ -257,7 +293,10 @@ function bindNavigationTabs() {
     });
     
     if (BTN_TAB_PERSONS) BTN_TAB_PERSONS.addEventListener('click', loadPersons);
-    //if (BTN_TAB_SEARCH) BTN_TAB_SEARCH.addEventListener('click', function() {});
+    
+    // TODO: BIND TABS
+    if (BTN_TAB_SEARCH) BTN_TAB_SEARCH.addEventListener('click', loadPersonsFiltered);
+
     //if (BTN_TAB_MAP) BTN_TAB_MAP.addEventListener('click', function() {});
 }
 

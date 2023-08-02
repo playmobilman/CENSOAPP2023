@@ -28,21 +28,13 @@ export default class APIClient {
         let response;
         
         try {
-            // await automatically extracts and assigns the data returned by a promise to a variable.
-            // The await supplements the then() function.
-            // However, it doesn't supplement the catch().
             response = await fetch(url, settings);
         } catch (error) {
-            // if (attempt < this.retryAttempts) {
-            //     await new Promise(resolve => setTimeout(resolve, this.retryDelay));
-            //     return this.fetchResource(endpoint, options, attempt + 1);
-            // }
             throw error;
         }
 
         if (!response.ok) {
             const body = await response.json();
-            //console.log(body);
             throw new Error(body.mensaje);
             //throw new Error(`HTTP error! status: ${response.status}, body: ${body}`);
         }
@@ -76,9 +68,10 @@ export default class APIClient {
         return this.fetchResource(endpoint, options);
     }
 
-    delete(endpoint) {
+    delete(endpoint, headers = {}) {
         const options = {
             method: 'DELETE',
+            headers: headers
         };
         return this.fetchResource(endpoint, options);
     }
