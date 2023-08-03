@@ -115,15 +115,9 @@ function LogIn() {
             LOGIN_PAGE.className = 'ion-hide';
             HOME_PAGE.className = 'ion-page';
 
-            // TODO: DELEGAR A UNA FUNCION 'UIListener' QUE ESCUCHE TODAS LAS INTERACCIONES CON EL TAB BAR PRINCIPAL
+            // DELEGAR A UNA FUNCION QUE ESCUCHE TODAS LAS INTERACCIONES CON EL TAB BAR PRINCIPAL
             bindNavigationTabs();
             switchActiveTab('home-page');
-            
-            //loadDepartments();
-            //loadOccupations();
-            //getTotalCensus();
-
-            //REGISTER_NAV.root = HOME_SCREEN;
         })
         .catch(error => {
             clearFields();
@@ -193,9 +187,11 @@ function getOccupations() {
     });
 }
 
-// CARGA LAS OCUPACIONES EN EL COMBO DE OCUPACIONES
+// CARGA LAS OCUPACIONES EN EL COMBO DE OCUPACIONES CON EL id 'selectListId'
 function loadOccupations(selectListId = "#slUserOccupation") {
+    // Retornar aqui si no encuentro el elemento.
     let slOccupations = document.querySelector(selectListId);
+
     const apiKey = localStorage.getItem('censo-user-token');
     const idUser = localStorage.getItem('censo-user-id');
     client.get('/ocupaciones.php', {
@@ -203,7 +199,7 @@ function loadOccupations(selectListId = "#slUserOccupation") {
         iduser: idUser
     }).then(data => {
         let occupationOptions = data.ocupaciones.map(opt => `<option value="${opt.id}">${opt.ocupacion}</option>`).join('');
-        slOccupations.innerHTML = `<option value=-1>Seleccione...</option>` + occupationOptions;
+        slOccupations.innerHTML = occupationOptions;
     })
     .catch(error => {
         showToastResult(error.message, 3000);
@@ -224,7 +220,7 @@ function getPersonsList() {
 
 
 // CARGA LA LISTA DE PERSONAS EN PANTALLA
-function loadPersons() {
+function loadPersons(occupationFilterId) {
     let personsDataListLoader = document.querySelector('#list-loader');
     let personsDataList = document.querySelector('#persons-data-list');
     
@@ -232,23 +228,31 @@ function loadPersons() {
     personsDataList.innerHTML = "";
 
     getPersonsList().then(data => {
-        let personListItems = data.personas.map(item => `<ion-item>
-            <ion-label>
-                <h1>${item.nombre}</h1>
-                <h2 class="ion-margin-top">${OCCUPATIONS.filter(occ => occ.id === item.ocupacion)[0].ocupacion}</h2>
-                <p class="ion-margin-top">${item.fechaNacimiento}</p>
-            </ion-label>
-            <ion-icon slot="end" data-id="${item.id}" onclick="deletePerson(event)" color="danger" name="trash"></ion-icon>
-        </ion-item>`).join('');    
-        personsDataList.innerHTML = personListItems;
+        if (data.personas.length > 0) {
+            let personListItems = (occupationFilterId ? data.personas.filter((pers) => pers.ocupacion == occupationFilterId) : data.personas).map(item => `<ion-item>
+                <ion-label>
+                    <h1>${item.nombre}</h1>
+                    <h2 class="ion-margin-top">${OCCUPATIONS.filter(occ => occ.id === item.ocupacion)[0].ocupacion}</h2>
+                    <p class="ion-margin-top">${item.fechaNacimiento}</p>
+                </ion-label>
+                <ion-icon slot="end" data-id="${item.id}" onclick="deletePerson(event)" color="danger" name="trash"></ion-icon>
+            </ion-item>`).join('');
+            personsDataList.innerHTML = '';    
+            personsDataList.innerHTML = (personListItems.length > 0) ? personListItems : "<ion-item class='ion-text-center'><ion-label>El filtro no arrojó resultados.</ion-label></ion-item>";
+        } else {
+            personsDataList.innerHTML = "<ion-item class='ion-text-center'><ion-label>No hay resultados.</ion-label></ion-item>"
+        }
         personsDataListLoader.classList.add('ion-hide');
     }).catch(error => {
         showToastResult(error.message, 3000);
     });
 }
 
-function loadPersonsFiltered() {
-    
+// CARGA LA LISTA DE PERSONAS FILTRADAS POR OCUPACION EN PANTALLA
+function loadPersonsFiltered(e) {
+    //debugger;
+    const occupationFilterId = e.target.value;
+    loadPersons(occupationFilterId);
 }
 
 // Se atachea la función deletePerson al objeto window, para hacerla accesible globalmente.
@@ -285,14 +289,17 @@ function bindNavigationTabs() {
         loadOccupations();
     });
     
-    if (BTN_TAB_PERSONS) BTN_TAB_PERSONS.addEventListener('click', loadPersons);
-    
-    // TODO: BIND TABS
-    if (BTN_TAB_SEARCH) BTN_TAB_SEARCH.addEventListener('click', function() {
+    if (BTN_TAB_PERSONS) BTN_TAB_PERSONS.addEventListener('click', function() {
+        loadPersons();
         loadOccupations('#slOccupationFilter');
-        //loadPersonsFiltered
-    });
 
+        // BINDEAR EL EVENTO CHANGE AL SELECT DE FILTRO PARA FILTRAR RESULTADOS
+        const SL_OCCUPATION_FILTER = document.querySelector('#slOccupationFilter');
+        if (SL_OCCUPATION_FILTER) SL_OCCUPATION_FILTER.addEventListener('change', loadPersonsFiltered);
+    });
+    
+    
+    // TODO: MAPA
     //if (BTN_TAB_MAP) BTN_TAB_MAP.addEventListener('click', function() {});
 }
 
@@ -364,12 +371,11 @@ function RegisterPerson() {
             apikey: localStorage.getItem('censo-user-token'),
             iduser: localStorage.getItem('censo-user-id')
         }).then(data => {
-            localStorage.setItem('censo-user-token', data.apiKey);
-            localStorage.setItem('censo-user-id', data.id);
+            //localStorage.setItem('censo-user-token', data.apiKey);
+            //localStorage.setItem('censo-user-id', data.id);
             switchActiveTab('home-page');
             showToastResult(data.mensaje, 3000, 'toast-success');
             getTotalCensus();
-            CENSUS_TAKER_REGISTER_PAGE.className = 'ion-hide';
             HOME_PAGE.className = 'ion-page';
             //REGISTER_NAV.root = HOME_SCREEN;
         })

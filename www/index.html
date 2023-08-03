@@ -280,12 +280,20 @@
                         </ion-toolbar>
                     </ion-header>
                     <ion-content fullscreen="true">
+                        <ion-grid class="ion-no-margin container w-full">
+                            <p class="ion-text-center">Seleccione ocupaci&oacute;n</p>
+                            <ion-row class="ion-justify-content-center ion-margin-bottom">
+                                <select class="w-80 ion-margin-top" placeholder="Ocupación" name="userOccupation" id="slOccupationFilter">
+                                    <option value="-1">Seleccione ocupación...</option>
+                                </select>
+                            </ion-row>
+                        </ion-grid>
                         <ion-list id="persons-data-list"></ion-list>
                     </ion-content>
                 </ion-tab>
 
                 <!-- TAB BUSQUEDA PERSONAS -->
-                <ion-tab tab="search-page">
+                <!-- <ion-tab tab="search-page">
                     <ion-nav id="register-nav"></ion-nav>
                     <ion-header class="ion-no-border">
                         <ion-toolbar>
@@ -303,14 +311,18 @@
                                 <ion-col class="ion-text-center">
                                     <span class="ion-margin-top ion-margin-bottom">Lista de personas por ocupaci&oacute;n.<br>Seleccione una ocupaci&oacute;n de la lista.</span>
                                     <select class="w-80 ion-margin-top" placeholder="Ocupación" name="userOccupation" id="slOccupationFilter">
-                                        <option value="-1">Ocupación...</option>
+                                        <option value="-1">Seleccione ocupación...</option>
                                     </select>
                                 </ion-col>
                             </ion-row>
+                            <ion-row>
+                                <ion-col>
+                                    <ion-list id="persons-filter-data-list"></ion-list>
+                                </ion-col>
+                            </ion-row>
                         </ion-grid>
-                        <ion-list id="persons-data-list"></ion-list>
                     </ion-content>
-                </ion-tab>
+                </ion-tab> -->
                 
                 <!-- TAB-BAR -->
                 <ion-tab-bar slot="bottom">
