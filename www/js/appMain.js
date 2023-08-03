@@ -19,10 +19,6 @@ function clearFields() {
     inputs.forEach(element => {
         element.value = "";
     });
-
-    // FIELD_USERNAME.value = "";
-    // FIELD_PASSWORD.value = "";
-    // FIELD_USERNAME.focus();
 }
 
 function hideScreens() {
@@ -60,9 +56,6 @@ function StartApp() {
     
     const LOGIN_BUTTON = document.querySelector('#btnLogin');
     if (LOGIN_BUTTON) LOGIN_BUTTON.addEventListener('click', LogIn);
-
-    const LOGOUT_BUTTON = document.querySelector('#btn-logout');
-    //if (LOGOUT_BUTTON) LOGOUT_BUTTON.addEventListener('click', LogOut);
 
     let logoutButtons = document.querySelectorAll('.btn-logout');
     logoutButtons.forEach(btn => {
@@ -201,8 +194,8 @@ function getOccupations() {
 }
 
 // CARGA LAS OCUPACIONES EN EL COMBO DE OCUPACIONES
-function loadOccupations() {
-    let slOccupations = document.querySelector('#slUserOccupation');
+function loadOccupations(selectListId = "#slUserOccupation") {
+    let slOccupations = document.querySelector(selectListId);
     const apiKey = localStorage.getItem('censo-user-token');
     const idUser = localStorage.getItem('censo-user-id');
     client.get('/ocupaciones.php', {
@@ -210,7 +203,7 @@ function loadOccupations() {
         iduser: idUser
     }).then(data => {
         let occupationOptions = data.ocupaciones.map(opt => `<option value="${opt.id}">${opt.ocupacion}</option>`).join('');
-        slOccupations.innerHTML = occupationOptions;
+        slOccupations.innerHTML = `<option value=-1>Seleccione...</option>` + occupationOptions;
     })
     .catch(error => {
         showToastResult(error.message, 3000);
@@ -295,7 +288,10 @@ function bindNavigationTabs() {
     if (BTN_TAB_PERSONS) BTN_TAB_PERSONS.addEventListener('click', loadPersons);
     
     // TODO: BIND TABS
-    if (BTN_TAB_SEARCH) BTN_TAB_SEARCH.addEventListener('click', loadPersonsFiltered);
+    if (BTN_TAB_SEARCH) BTN_TAB_SEARCH.addEventListener('click', function() {
+        loadOccupations('#slOccupationFilter');
+        //loadPersonsFiltered
+    });
 
     //if (BTN_TAB_MAP) BTN_TAB_MAP.addEventListener('click', function() {});
 }
@@ -309,7 +305,7 @@ function RegisterCensusTaker() {
         showAlert({
             header: "Espera!",
             subHeader: "Error",
-            message: "Los datos de acceso son obligatorios!"
+            message: "Todos los campos son obligatorios!"
         });
         clearFields();
         return;
@@ -352,7 +348,7 @@ function RegisterPerson() {
         showAlert({
             header: "Espera!",
             subHeader: "Error",
-            message: "Los datos de acceso son obligatorios!"
+            message: "Todos los campos son obligatorios!"
         });
         clearFields();
         return;
