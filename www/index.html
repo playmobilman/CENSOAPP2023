@@ -7,7 +7,9 @@
     <title>CENSO APP - 2023</title>
     <script type="module" src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.esm.js"></script>
     <script nomodule src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="*"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="*"></script>
     <link rel="stylesheet" href="styles/app.css" />
     <script type="module">
         import * as appUI from './js/appMain.js';
@@ -185,6 +187,12 @@
                                     <h3 id="totalCensusIndicator">Cargando...</h3>
                                 </ion-card-header>
                             </ion-card>
+                            <ion-card color="primary ion-margin-top">
+                                <ion-card-header>
+                                    <h1 class="ion-no-margin">Habitantes censados por mi hasta ahora</h1>
+                                    <h3 id="totalCensusByMeIndicator">Cargando...</h3>
+                                </ion-card-header>
+                            </ion-card>
                         </div> 
                     </ion-content>
                 </ion-tab>
@@ -292,8 +300,8 @@
                     </ion-content>
                 </ion-tab>
 
-                <!-- TAB BUSQUEDA PERSONAS -->
-                <!-- <ion-tab tab="search-page">
+                <!-- TAB MAPA -->
+                <ion-tab tab="map-page" class="ion-page">
                     <ion-nav id="register-nav"></ion-nav>
                     <ion-header class="ion-no-border">
                         <ion-toolbar>
@@ -305,24 +313,39 @@
                             </ion-buttons>
                         </ion-toolbar>
                     </ion-header>
-                    <ion-content fullscreen="true">
+                    <ion-content>
+                        <style>
+                            #mapa {
+                                width: 100%;
+                                height: 90%;
+                            }
+                        </style>
                         <ion-grid class="ion-no-margin container w-full">
-                            <ion-row class="ion-justify-content-center ion-margin-top ion-margin-bottom">
-                                <ion-col class="ion-text-center">
-                                    <span class="ion-margin-top ion-margin-bottom">Lista de personas por ocupaci&oacute;n.<br>Seleccione una ocupaci&oacute;n de la lista.</span>
-                                    <select class="w-80 ion-margin-top" placeholder="Ocupación" name="userOccupation" id="slOccupationFilter">
-                                        <option value="-1">Seleccione ocupación...</option>
-                                    </select>
-                                </ion-col>
-                            </ion-row>
-                            <ion-row>
-                                <ion-col>
-                                    <ion-list id="persons-filter-data-list"></ion-list>
-                                </ion-col>
+                            <ion-row class="ion-justify-content-center ion-margin-bottom">
+                                <select class="w-80 ion-margin-top" placeholder="Ocupación" name="mapKmRadius" id="mapKmRadius">
+                                    <option value="-1" selected>Radio (kms.)</option>
+                                    <option value="5">5 km.</option>
+                                    <option value="10">10 km.</option>
+                                    <option value="15">15 km.</option>
+                                    <option value="20">20 km.</option>
+                                    <option value="25">25 km.</option>
+                                    <option value="30">30 km.</option>
+                                    <option value="35">35 km.</option>
+                                    <option value="40">40 km.</option>
+                                    <option value="45">45 km.</option>
+                                    <option value="50">50 km.</option>
+                                    <option value="55">55 km.</option>
+                                    <option value="100">100 km.</option>
+                                </select>
                             </ion-row>
                         </ion-grid>
+                        <p class="ion-text-center ion-no-margin ion-hide" id="map-loading-indicator">Localizando mapa...</p>
+                        <div id="mapa"></div>
+                        <!-- <div class="map-container">
+                            <div id="mapa" class="map"></div>
+                        </div> -->
                     </ion-content>
-                </ion-tab> -->
+                </ion-tab>
                 
                 <!-- TAB-BAR -->
                 <ion-tab-bar slot="bottom">
@@ -337,10 +360,6 @@
                   <ion-tab-button tab="census-list-page" id="tab-census-list">
                     <ion-icon name="list-outline"></ion-icon>
                     Personas
-                  </ion-tab-button>
-                  <ion-tab-button tab="search-page" id="tab-search">
-                    <ion-icon name="search-outline"></ion-icon>
-                    B&uacute;squeda
                   </ion-tab-button>
                   <ion-tab-button tab="map-page" id="tab-map">
                     <ion-icon name="map-outline"></ion-icon>

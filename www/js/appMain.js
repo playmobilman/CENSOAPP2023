@@ -1,16 +1,108 @@
 import APIClient from './apiClient.js';
 const client = new APIClient("https://censo.develotion.com/");
 
+/*--------- UI REFS ---------*/
 const LOGIN_PAGE = document.querySelector("#login-screen");
 const HOME_PAGE = document.querySelector("#app-screen");
 const CENSUS_TAKER_REGISTER_PAGE = document.querySelector('#census-taker-register-screen');
-
 const FIELD_USERNAME = document.querySelector("#txtCensusUser");
 const FIELD_PASSWORD = document.querySelector("#txtCensusPassword");
 const HOME_NAV = document.querySelector('#home-nav');
 const REGISTER_NAV = document.querySelector('#register-nav');
 
-let OCCUPATIONS = [];
+/*--------- MAP ---------*/ 
+let long;
+let lat;
+let map;
+let currentKMCoverageThreshold;
+
+function setOrigin(position) {
+    
+    // Bind km. radius selector
+    const KM_RADIUS_SELECTOR = document.querySelector('#mapKmRadius');
+    KM_RADIUS_SELECTOR.selectedIndex = 0;
+    if (KM_RADIUS_SELECTOR) KM_RADIUS_SELECTOR.addEventListener('change', (evt) => {
+        let KMRadiusThreshold = evt.target.value;
+        showSurroundingCensusData(KMRadiusThreshold);
+    });
+
+    lat = position.coords.latitude;
+    long = position.coords.longitude;
+    
+    if (map) {
+        map.remove();
+    }
+
+    var centerIcon = L.divIcon({ className: 'center-marker-icon' });
+    map = L.map('mapa').setView([lat, long], 13);
+    map.enableHighAccuracy = true;
+    L.marker([lat, long], {icon: centerIcon}).addTo(map);
+
+    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: 'Map data © <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    setTimeout(function () {
+        window.dispatchEvent(new Event('resize'));
+    }, 1000);
+}
+
+async function showSurroundingCensusData(kmThreshold) {
+    let myMapCenter = L.latLng(lat, long);
+    let cityCenter;
+    let citiesResult;
+    //let currentKMCoverageThreshold;
+    let mapLoadingIndicator = document.querySelector('#map-loading-indicator');
+
+    if (currentKMCoverageThreshold) {
+        map.removeLayer(currentKMCoverageThreshold);
+    }
+    currentKMCoverageThreshold = L.circle(myMapCenter, {radius: kmThreshold*1000}).addTo(map);
+
+    try {
+        citiesResult = await getCitiesList();
+        if (citiesResult.ciudades.length > 0) {
+            mapLoadingIndicator.classList.remove('ion-hide');
+            for(let city of citiesResult.ciudades) {
+                cityCenter = L.latLng(city.latitud, city.longitud);
+                if (map.distance(myMapCenter, cityCenter) < (kmThreshold*1000)) {
+                    let personsCount = await getRegisteredPersonsByCity(city.id)
+                    if (personsCount >= 1) {
+                        let cityMarker = L.marker([city.latitud, city.longitud]).addTo(map);
+                        cityMarker.bindPopup(`<b>Ciudad: ${city.nombre}</b><p>Cantidad de personas censadas: ${personsCount}</p>`).openPopup();
+                    }
+                }
+            }
+            mapLoadingIndicator.classList.add('ion-hide');
+            map.setZoom(9);
+        }
+    } catch(error) {
+        showToastResult(error.message, 3000);
+    }
+}
+
+async function getRegisteredPersonsByCity(cityId) {
+    let persons = await getPersonsList();
+    return persons.personas.filter((p) => p.ciudad === cityId).length;
+}
+
+function showError(error) {
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+            showToastResult('Los servicios de ubicación han sido denegados', 3000);
+            break;
+        case error.POSITION_UNAVAILABLE:
+            showToastResult('Los servicios de ubicación no están disponibles.');
+            break;
+        case error.TIMEOUT:
+            showToastResult('La solicitud de posicionamiento ha caducado.');
+            break;
+        case error.UNKNOWN_ERROR:
+            showToastResult('Ha ocurrido un error inesperado.');
+            break;
+    }
+}
+
 
 function clearFields() {
 
@@ -53,7 +145,6 @@ function switchActiveTab(targetTabName) {
 }
 
 function StartApp() {
-    
     const LOGIN_BUTTON = document.querySelector('#btnLogin');
     if (LOGIN_BUTTON) LOGIN_BUTTON.addEventListener('click', LogIn);
 
@@ -90,8 +181,6 @@ function StartApp() {
         //ROUTER.push('/login');
     }
 }
-
-
 
 function LogIn() {
     const USERNAME = document.querySelector("#txtCensusUser").value;
@@ -153,12 +242,14 @@ function loadDepartments() {
     });
 }
 
-// CARGA LAS CIUDADES EN EL COMBO DE CIUDADES
+
+// CARGA LAS CIUDADES DE UN DEPARTAMENTO ESPECIFICO EN EL COMBO DE CIUDADES.
 function loadCities(deptId) {
     let slCities = document.querySelector('#slUserCity');
     const apiKey = localStorage.getItem('censo-user-token');
     const idUser = localStorage.getItem('censo-user-id');
 
+    // TODO: ESTO SE PODRIA OPTIMIZAR, OBTENIENDO LAS CIUDADES FILTRANO LA LISTA DE CIUDADES PRECARGADA DESDE EL INICIO.
     client.get(`/ciudades.php?idDepartamento=${deptId}`, {
         apikey: apiKey,
         iduser: idUser
@@ -172,38 +263,40 @@ function loadCities(deptId) {
     });
 }
 
+// OBTIENE LA LISTA DE TODAS LAS CIUDADES
+function getCitiesList() {
+    const apiKey = localStorage.getItem('censo-user-token');
+    const idUser = localStorage.getItem('censo-user-id');
+    return client.get(`/ciudades.php`, {
+        apikey: apiKey,
+        iduser: idUser
+    });
+}
+
 // OBTIENE LA INFORMACION DE LAS OCUPACIONES
 function getOccupations() {
     const apiKey = localStorage.getItem('censo-user-token');
     const idUser = localStorage.getItem('censo-user-id');
-    client.get('/ocupaciones.php', {
+    return client.get('/ocupaciones.php', {
         apikey: apiKey,
         iduser: idUser
-    }).then(data => {
-        OCCUPATIONS = data.ocupaciones;
-    })
-    .catch(error => {
-        showToastResult(error.message, 3000);
     });
 }
 
 // CARGA LAS OCUPACIONES EN EL COMBO DE OCUPACIONES CON EL id 'selectListId'
-function loadOccupations(selectListId = "#slUserOccupation") {
+async function loadOccupations(selectListId = "#slUserOccupation") {
     // Retornar aqui si no encuentro el elemento.
     let slOccupations = document.querySelector(selectListId);
-
-    const apiKey = localStorage.getItem('censo-user-token');
-    const idUser = localStorage.getItem('censo-user-id');
-    client.get('/ocupaciones.php', {
-        apikey: apiKey,
-        iduser: idUser
-    }).then(data => {
-        let occupationOptions = data.ocupaciones.map(opt => `<option value="${opt.id}">${opt.ocupacion}</option>`).join('');
-        slOccupations.innerHTML = occupationOptions;
-    })
-    .catch(error => {
+    let occupationResult = await getOccupations();
+    console.log(occupationResult.ocupaciones);
+    try {
+        if (occupationResult.ocupaciones.length > 0) {
+            let occupationOptions = occupationResult.ocupaciones.map(opt => `<option value="${opt.id}">${opt.ocupacion}</option>`).join('');
+            slOccupations.innerHTML = occupationOptions;
+        }
+    } catch(error) {
         showToastResult(error.message, 3000);
-    });
+    }
 }
 
 
@@ -220,37 +313,42 @@ function getPersonsList() {
 
 
 // CARGA LA LISTA DE PERSONAS EN PANTALLA
-function loadPersons(occupationFilterId) {
+async function loadPersons(occupationFilterId) {
+    //debugger
     let personsDataListLoader = document.querySelector('#list-loader');
     let personsDataList = document.querySelector('#persons-data-list');
-    
+    let personResult;
+    let occupations;
+
     personsDataListLoader.classList.remove('ion-hide');
     personsDataList.innerHTML = "";
 
-    getPersonsList().then(data => {
-        if (data.personas.length > 0) {
-            let personListItems = (occupationFilterId ? data.personas.filter((pers) => pers.ocupacion == occupationFilterId) : data.personas).map(item => `<ion-item>
+    try {
+        personResult = await getPersonsList();
+        occupations = await getOccupations();
+        console.log(personResult.personas);
+        if (personResult.personas.length > 0) {
+            let personListItems = (occupationFilterId ? personResult.personas.filter((pers) => pers.ocupacion == occupationFilterId) : personResult.personas).map(item => `<ion-item>
                 <ion-label>
                     <h1>${item.nombre}</h1>
-                    <h2 class="ion-margin-top">${OCCUPATIONS.filter(occ => occ.id === item.ocupacion)[0].ocupacion}</h2>
+                    <h2 class="ion-margin-top">${occupations.ocupaciones.filter(occ => occ.id === item.ocupacion)[0].ocupacion}</h2>
                     <p class="ion-margin-top">${item.fechaNacimiento}</p>
                 </ion-label>
                 <ion-icon slot="end" data-id="${item.id}" onclick="deletePerson(event)" color="danger" name="trash"></ion-icon>
             </ion-item>`).join('');
-            personsDataList.innerHTML = '';    
+            personsDataList.innerHTML = "";    
             personsDataList.innerHTML = (personListItems.length > 0) ? personListItems : "<ion-item class='ion-text-center'><ion-label>El filtro no arrojó resultados.</ion-label></ion-item>";
         } else {
             personsDataList.innerHTML = "<ion-item class='ion-text-center'><ion-label>No hay resultados.</ion-label></ion-item>"
         }
         personsDataListLoader.classList.add('ion-hide');
-    }).catch(error => {
+    } catch (error) {
         showToastResult(error.message, 3000);
-    });
+    }
 }
 
 // CARGA LA LISTA DE PERSONAS FILTRADAS POR OCUPACION EN PANTALLA
 function loadPersonsFiltered(e) {
-    //debugger;
     const occupationFilterId = e.target.value;
     loadPersons(occupationFilterId);
 }
@@ -276,12 +374,12 @@ function bindNavigationTabs() {
     const BTN_TAB_HOME = document.querySelector('#tab-button-home-page');
     const BTN_TAB_REGISTER = document.querySelector('#tab-button-register-page');
     const BTN_TAB_PERSONS = document.querySelector('#tab-button-census-list-page');
-    const BTN_TAB_SEARCH = document.querySelector('#tab-button-search-page');
-    //const BTN_TAB_MAP = document.querySelector('#tab-button-map-page');
+    const BTN_TAB_MAP = document.querySelector('#tab-button-map-page');
 
     if (BTN_TAB_HOME) BTN_TAB_HOME.addEventListener('click', function() {
         getTotalCensus();
         getOccupations();
+        getCitiesList();
     });
     
     if (BTN_TAB_REGISTER) BTN_TAB_REGISTER.addEventListener('click', function() {
@@ -298,9 +396,13 @@ function bindNavigationTabs() {
         if (SL_OCCUPATION_FILTER) SL_OCCUPATION_FILTER.addEventListener('change', loadPersonsFiltered);
     });
     
-    
-    // TODO: MAPA
-    //if (BTN_TAB_MAP) BTN_TAB_MAP.addEventListener('click', function() {});
+    if (BTN_TAB_MAP) BTN_TAB_MAP.addEventListener('click', function() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(setOrigin, showError);
+        } else {
+            showToastResult('Los servicios de ubicación no están habilitados.', 3000);
+        }
+    });
 }
 
 function RegisterCensusTaker() {
@@ -397,9 +499,10 @@ function LogOut() {
     redirectToLogin(false, '');
 }
 
-function getTotalCensus() {
+async function getTotalCensus() {
     const apiKey = localStorage.getItem('censo-user-token');
     const idUser = localStorage.getItem('censo-user-id');
+    let totalCensusByMe = await getPersonsList();
     
     client.get('/totalCensados.php', {
         apikey: apiKey,
@@ -408,7 +511,11 @@ function getTotalCensus() {
         console.log(data.total);
         let totalCensusIndicator = document.querySelector('#totalCensusIndicator'); 
         totalCensusIndicator.innerHTML = '';
-        totalCensusIndicator.textContent = `Total: ${data.total} hab.`
+        totalCensusIndicator.textContent = `Total: ${data.total} hab.`;
+
+        let totalCensusByMeIndicator = document.querySelector('#totalCensusByMeIndicator');
+        totalCensusByMeIndicator.innerHTML = '';
+        totalCensusByMeIndicator.textContent = totalCensusByMe.personas.length;
     })
     .catch(error => {
         redirectToLogin(error.message);
@@ -446,9 +553,7 @@ async function showAlert(alertSettings) {
     await alert.present();
 }
 
-//StartApp();
-
-// Module exports
+// Module Exports
 export {
     StartApp,
     LogIn
