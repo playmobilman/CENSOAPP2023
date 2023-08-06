@@ -511,11 +511,20 @@ async function getTotalCensus() {
         console.log(data.total);
         let totalCensusIndicator = document.querySelector('#totalCensusIndicator'); 
         totalCensusIndicator.innerHTML = '';
-        totalCensusIndicator.textContent = `Total: ${data.total} hab.`;
+        totalCensusIndicator.innerHTML = `Población censada: ${data.total} hab.`;
+        //totalCensusIndicator.textContent = `Total: ${data.total} hab.`;
 
         let totalCensusByMeIndicator = document.querySelector('#totalCensusByMeIndicator');
         totalCensusByMeIndicator.innerHTML = '';
-        totalCensusByMeIndicator.textContent = totalCensusByMe.personas.length;
+        totalCensusByMeIndicator.innerHTML = `Habitantes censados por mi: ${totalCensusByMe.personas.length}`;
+
+        let totalCensusByMeIndicatorMvd = document.querySelector('#totalCensusByMeIndicatorMvd');
+        totalCensusByMeIndicatorMvd.innerHTML = '';
+        totalCensusByMeIndicatorMvd.innerHTML = `En Montevideo: ${totalCensusByMe.personas.filter((p) => p.departamento === 3218).length}`;
+
+        let totalCensusByMeRest = document.querySelector('#totalCensusByMeIndicatorRest');
+        totalCensusByMeRest.innerHTML = '';
+        totalCensusByMeRest.innerHTML = `En el resto del país: ${totalCensusByMe.personas.filter((p) => p.departamento !== 3218).length}`;
     })
     .catch(error => {
         redirectToLogin(error.message);
