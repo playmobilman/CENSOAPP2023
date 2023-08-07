@@ -51,6 +51,7 @@ async function showSurroundingCensusData(kmThreshold) {
     let myMapCenter = L.latLng(lat, long);
     let cityCenter;
     let citiesResult;
+    let personsResult;
     //let currentKMCoverageThreshold;
     let mapLoadingIndicator = document.querySelector('#map-loading-indicator');
 
@@ -61,16 +62,17 @@ async function showSurroundingCensusData(kmThreshold) {
 
     try {
         citiesResult = await getCitiesList();
+        personsResult = await getPersonsList();
         if (citiesResult.ciudades.length > 0) {
             mapLoadingIndicator.classList.remove('ion-hide');
             for(let city of citiesResult.ciudades) {
                 cityCenter = L.latLng(city.latitud, city.longitud);
-                if (map.distance(myMapCenter, cityCenter) < (kmThreshold*1000)) {
-                    let personsCount = await getRegisteredPersonsByCity(city.id)
-                    if (personsCount >= 1) {
-                        let cityMarker = L.marker([city.latitud, city.longitud]).addTo(map);
+                let personsCount = personsResult.personas.filter((p) => p.ciudad === city.id).length;
+                if (map.distance(myMapCenter, cityCenter) <= (kmThreshold*1000) && personsCount >= 1) {
+                    //if (personsCount >= 1) {
+                        let cityMarker = L.marker(cityCenter).addTo(map);
                         cityMarker.bindPopup(`<b>Ciudad: ${city.nombre}</b><p>Cantidad de personas censadas: ${personsCount}</p>`).openPopup();
-                    }
+                    //}
                 }
             }
             mapLoadingIndicator.classList.add('ion-hide');
@@ -79,11 +81,6 @@ async function showSurroundingCensusData(kmThreshold) {
     } catch(error) {
         showToastResult(error.message, 3000);
     }
-}
-
-async function getRegisteredPersonsByCity(cityId) {
-    let persons = await getPersonsList();
-    return persons.personas.filter((p) => p.ciudad === cityId).length;
 }
 
 function showError(error) {
