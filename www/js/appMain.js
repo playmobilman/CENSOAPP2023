@@ -47,35 +47,47 @@ function setOrigin(position) {
     }, 1000);
 }
 
+
+let markersLayer = null;
+
 async function showSurroundingCensusData(kmThreshold) {
     let myMapCenter = L.latLng(lat, long);
     let cityCenter;
-    let citiesResult;
-    let personsResult;
+    let citiesResult = null;
+    let personsResult = null;
     //let currentKMCoverageThreshold;
     let mapLoadingIndicator = document.querySelector('#map-loading-indicator');
 
+    if (markersLayer) {
+        markersLayer.clearLayers();
+    }
+    markersLayer = new L.LayerGroup();
+    
     if (currentKMCoverageThreshold) {
         map.removeLayer(currentKMCoverageThreshold);
     }
     currentKMCoverageThreshold = L.circle(myMapCenter, {radius: kmThreshold*1000}).addTo(map);
 
     try {
+        
         citiesResult = await getCitiesList();
         personsResult = await getPersonsList();
         if (citiesResult.ciudades.length > 0) {
+            map.removeLayer(markersLayer);
             mapLoadingIndicator.classList.remove('ion-hide');
             for(let city of citiesResult.ciudades) {
                 cityCenter = L.latLng(city.latitud, city.longitud);
                 let personsCount = personsResult.personas.filter((p) => p.ciudad === city.id).length;
                 if (map.distance(myMapCenter, cityCenter) <= (kmThreshold*1000) && personsCount >= 1) {
                     //if (personsCount >= 1) {
-                        let cityMarker = L.marker(cityCenter).addTo(map);
+                        let cityMarker = L.marker(cityCenter);
                         cityMarker.bindPopup(`<b>Ciudad: ${city.nombre}</b><p>Cantidad de personas censadas: ${personsCount}</p>`).openPopup();
+                        markersLayer.addLayer(cityMarker);
                     //}
                 }
             }
             mapLoadingIndicator.classList.add('ion-hide');
+            markersLayer.addTo(map);
             map.setZoom(9);
         }
     } catch(error) {
@@ -316,7 +328,7 @@ async function loadPersons(occupationFilterId) {
     let personsDataList = document.querySelector('#persons-data-list');
     let personResult;
     let occupations;
-
+    
     personsDataListLoader.classList.remove('ion-hide');
     personsDataList.innerHTML = "";
 
